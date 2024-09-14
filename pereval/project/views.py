@@ -26,6 +26,19 @@ class PerevalViewset(viewsets.ModelViewSet):
     serializer_class = PerevalSerializer
     filterset_fields = ['user__email']
 
+    def get_by_email(self, request, *args, **kwargs):
+        email = request.query_params.get('user__email')  # Получаем email из параметров запроса
+        if not email:
+            return Response({"status": 400, "message": "Email is required"}, status=400)
+
+        # Фильтрация по email
+        perevals = self.queryset.filter(user__email=email)
+
+        if perevals.exists():
+            serializer = PerevalSerializer(perevals, many=True)
+            return Response(serializer.data)
+        else:
+            return Response({"status": 404, "message": "No data found for this user"}, status=404)
 
     def create(self, request, *args, **kwargs):
         try:
